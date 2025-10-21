@@ -1,3 +1,0 @@
-git add .nojekyll
-git commit -m "Desativa Jekyll para permitir HTML puro"
-git push
