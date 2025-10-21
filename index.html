@@ -101,6 +101,7 @@ canvas#stars {
   border-radius: 12px;
   margin-bottom: 10px;
   line-height: 1.4;
+  white-space: pre-wrap;
 }
 .user {
   align-self: flex-end;
@@ -157,7 +158,7 @@ canvas#stars {
       <p>Seu assistente cósmico de análises</p>
     </div>
     <div class="chat-box" id="chat-box">
-      <div class="message bot">Olá! Sou o Insight Tab. Pronto para analisar suas planilhas de vendas. 🌠</div>
+      <div class="message bot">🌠 Olá! Sou o Insight Tab — pronto para analisar suas 12 planilhas de vendas.</div>
     </div>
     <div class="input-area">
       <input type="text" id="userInput" placeholder="Digite sua pergunta...">
@@ -190,7 +191,7 @@ resizeCanvas();
 
 function createStars() {
   stars = [];
-  const numStars = 80; // poucas estrelas
+  const numStars = 80;
   for (let i = 0; i < numStars; i++) {
     stars.push({
       x: Math.random() * canvas.width,
@@ -217,10 +218,13 @@ function animateStars() {
 createStars();
 animateStars();
 
-/* ===================== CHAT SIMULATION ===================== */
+/* ===================== CHAT CONNECTION ===================== */
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
+
+// ⚙️ Substitua pela URL do seu back-end no Render:
+const API_URL = "https://seu-backend.onrender.com/api/chat";
 
 function addMessage(content, sender='user') {
   const msg = document.createElement('div');
@@ -230,22 +234,45 @@ function addMessage(content, sender='user') {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-sendBtn.addEventListener('click', () => {
-  const text = userInput.value.trim();
-  if (!text) return;
+async function sendMessage(text) {
   addMessage(text, 'user');
   userInput.value = '';
-  setTimeout(() => {
-    addMessage("🔮 Analisando dados... (futuro back-end aqui)", 'bot');
-  }, 600);
+  addMessage("🔮 Analisando dados...", 'bot');
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
+    });
+    const data = await res.json();
+    chatBox.removeChild(chatBox.lastChild);
+    addMessage(data.reply || "⚠️ Nenhuma resposta recebida.", 'bot');
+  } catch (err) {
+    chatBox.removeChild(chatBox.lastChild);
+    addMessage("❌ Erro ao conectar ao servidor.", 'bot');
+    console.error(err);
+  }
+}
+
+sendBtn.addEventListener('click', () => {
+  const text = userInput.value.trim();
+  if (text) sendMessage(text);
+});
+userInput.addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendMessage(userInput.value.trim());
 });
 
-/* ===================== BOTÕES PLACEHOLDERS ===================== */
-document.getElementById('resumoBtn').onclick = () => addMessage("🪐 Resumo do mês solicitado...", "bot");
-document.getElementById('variacaoBtn').onclick = () => addMessage("📈 Calculando variação anual...", "bot");
-document.getElementById('topBtn').onclick = () => addMessage("🏆 Buscando top 3 produtos...", "bot");
-document.getElementById('compararBtn').onclick = () => addMessage("🔍 Comparando meses...", "bot");
-document.getElementById('exportarBtn').onclick = () => addMessage("💾 Exportando relatório...", "bot");
+/* ===================== FUNÇÕES RÁPIDAS ===================== */
+function quickAction(msg) {
+  sendMessage(msg);
+}
+
+document.getElementById('resumoBtn').onclick = () => quickAction("Mostre o resumo geral das vendas.");
+document.getElementById('variacaoBtn').onclick = () => quickAction("Calcule a variação anual das vendas.");
+document.getElementById('topBtn').onclick = () => quickAction("Liste os 3 produtos mais vendidos do ano.");
+document.getElementById('compararBtn').onclick = () => quickAction("Compare as vendas entre os meses.");
+document.getElementById('exportarBtn').onclick = () => quickAction("Gere um relatório geral das vendas.");
 </script>
 
 </body>
