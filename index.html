@@ -152,7 +152,18 @@
             display: flex;
             gap: 10px;
             padding-bottom: 20px; 
+            /* NOVO: Centraliza o formulário horizontalmente */
+            justify-content: center; 
         }
+        
+        /* NOVO: Garante que o formulário tenha uma largura máxima e use o flex para os elementos internos */
+        .input-area #chat-form {
+            display: flex;
+            max-width: 600px; /* Largura máxima para centralização em desktop */
+            width: 100%;      /* Garante que preencha em telas menores */
+            gap: 10px;
+        }
+        
         .input-area input {
             flex: 1;
             padding: 14px;
@@ -513,7 +524,7 @@
         if (!message) return;
 
         // Validação da URL
-        if (API_BASE_URL.includes('YOUR_RENDER_API_URL_HERE')) {
+        if (API_BASE_URL.includes('https://chat-bot-back-end-7.onrender.com')) {
              statusMessage.innerHTML = '⚠️ **ERRO DE CONFIGURAÇÃO:** Substitua `YOUR_RENDER_API_URL_HERE` no JS pela sua URL do Render.';
              return;
         }
