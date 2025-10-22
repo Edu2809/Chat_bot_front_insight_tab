@@ -160,7 +160,7 @@
         .input-area #chat-form {
             display: flex;
             max-width: 600px; /* Largura máxima para centralização em desktop */
-            width: 100%;      /* Garante que preencha em telas menores */
+            width: 100%;     /* Garante que preencha em telas menores */
             gap: 10px;
         }
         
@@ -382,6 +382,8 @@
     const CHAT_ENDPOINT = `${API_BASE_URL}/api/chat`;
     const RESET_ENDPOINT = `${API_BASE_URL}/api/reset`;
     
+    const API_PLACEHOLDER = 'YOUR_RENDER_API_URL_HERE'; // Variável de controle interna
+
     const chatContainer = document.getElementById('chat-container');
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
@@ -471,10 +473,10 @@
         const file = e.target.files[0];
         if (!file) return;
 
-        // Validação da URL
-        if (API_BASE_URL.includes('https://chat-bot-back-end-7.onrender.com')) {
-             statusMessage.innerHTML = '⚠️ **ERRO DE CONFIGURAÇÃO:** Substitua `YOUR_RENDER_API_URL_HERE` no JS pela sua URL do Render.';
-             return;
+        // Validação da URL CENTRALIZADA
+        if (API_BASE_URL === API_PLACEHOLDER) {
+            statusMessage.innerHTML = '⚠️ **ERRO DE CONFIGURAÇÃO:** Substitua `YOUR_RENDER_API_URL_HERE` no JS pela sua URL do Render.';
+            return;
         }
 
         toggleInput(true);
@@ -523,10 +525,10 @@
         const message = userInput.value.trim();
         if (!message) return;
 
-        // Validação da URL
-        if (API_BASE_URL.includes('https://chat-bot-back-end-7.onrender.com/')) {
-             statusMessage.innerHTML = '⚠️ **ERRO DE CONFIGURAÇÃO:** Substitua `YOUR_RENDER_API_URL_HERE` no JS pela sua URL do Render.';
-             return;
+        // Validação da URL CENTRALIZADA
+        if (API_BASE_URL === API_PLACEHOLDER) {
+            statusMessage.innerHTML = '⚠️ **ERRO DE CONFIGURAÇÃO:** Substitua `YOUR_RENDER_API_URL_HERE` no JS pela sua URL do Render.';
+            return;
         }
 
         userInput.value = '';
@@ -570,6 +572,12 @@
         let apiSuccess = true; // Flag para rastrear se a chamada de API foi bem-sucedida
 
         try {
+             // Validação da URL antes de chamar o reset da API
+            if (callApi && API_BASE_URL === API_PLACEHOLDER) {
+                apiSuccess = false; // Não tentaremos chamar a API, mas faremos o reset local
+                throw new Error("API URL not configured. Skipping server reset.");
+            }
+            
             // 1. Chamar o endpoint de reset no servidor
             if (callApi) {
                 statusMessage.innerHTML = '<span style="color:#ff6666;">Tentando resetar contexto no servidor (Render)...</span>';
@@ -584,7 +592,7 @@
             // Se a API falhar (rede ou servidor dormindo), apenas registramos o erro e
             // tratamos como falha de API, mas continuamos com o reset local.
             createMessageBubble('Insight Tab', 
-                '**Alerta de Conexão:** Falha ao comunicar com o servidor para resetar o contexto (provavelmente o Render está *dormindo*). ' +
+                '**Alerta de Conexão:** Falha ao comunicar com o servidor para resetar o contexto (provavelmente o Render está *dormindo* ou a URL não foi configurada). ' +
                 '**Fazendo reset apenas da interface (local).** Tente um Upload em seguida.');
             statusMessage.innerHTML = '<span style="color:#ff6666;">Falha de API, mas reset local OK.</span>';
             apiSuccess = false; // Garante que a mensagem final seja de erro
@@ -595,17 +603,20 @@
         createInitialMessage();
         
         // 3. Atualizar a mensagem final
-        if (apiSuccess) {
+        if (apiSuccess && callApi) {
             statusMessage.innerHTML = '<span style="color:#99aaff;">Chat e contexto de dados resetados (Local e Servidor). Pronto para novo upload.</span>';
+        } else if (!callApi) {
+            // Se não chamou a API (ex: reset após upload)
+            statusMessage.innerHTML = '<span style="color:#99aaff;">Pronto para começar.</span>';
         }
-        
+
         toggleInput(false);
         userInput.focus();
     }
 
     resetButton.addEventListener('click', (e) => {
         e.preventDefault();
-        // Chamamos diretamente o reset
+        // Chamamos o reset completo
         resetChat(true); 
     });
 
@@ -625,6 +636,11 @@
         toggleInput(false);
         // Coloca o foco no input
         userInput.focus();
+        
+        // Exibe o erro de configuração se o placeholder for usado
+        if (API_BASE_URL === API_PLACEHOLDER) {
+            statusMessage.innerHTML = '⚠️ **ERRO DE CONFIGURAÇÃO:** Substitua `YOUR_RENDER_API_URL_HERE` no JS pela sua URL do Render.';
+        }
     }
 
     window.onload = initApp;
