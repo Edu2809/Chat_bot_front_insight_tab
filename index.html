@@ -315,19 +315,25 @@
       resetButton.style.opacity = disable ? 0.5 : 1;
     }
 
-    async function checkBackendHealth() {
-      try {
-        const resp = await fetch(API_BASE_URL.replace(/\/$/, ''), { method: 'GET', cache: 'no-store' });
-        if (!resp.ok) throw new Error('Status não OK');
-        const json = await resp.json();
-        statusMessage.innerHTML = `Conectado ao servidor (${json.dados_status}). Linhas: ${json.total_linhas}`;
-        toggleInput(false);
-        return true;
-      } catch (e) {
-        statusMessage.innerHTML = `⚠️ Erro de conexão com backend (${API_BASE_URL}).`;
-        toggleInput(true);
-        return false;
-      }
+    async function uploadFile(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await fetch("https://seuapp.onrender.com/api/upload", {
+      method: "POST",
+      body: formData,
+      mode: "cors",
+      credentials: "omit"
+    });
+
+    const data = await response.json();
+    console.log("Upload OK:", data);
+  } catch (err) {
+    console.error("Erro no upload:", err);
+  }
+}
+
     }
 
     async function initApp() {
