@@ -1,649 +1,426 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insight Tab - Análise de Dados com Upload</title>
-    <!-- Incluindo a fonte Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        /* ===================== RESET & BASE ===================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            /* Fundo escuro e degradê do código original */
-            font-family: 'Inter', sans-serif;
-            color: #E6EEF6;
-            background: radial-gradient(ellipse at bottom, #05010a 0%, #03010f 100%);
-            overflow: hidden; 
-            height: 100vh;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Insight Tab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-        /* ===================== ESTRELAS (CANVAS) ===================== */
-        canvas#stars {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
+  <style>
+    /* ==================== ESTILO ORIGINAL ==================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        /* ===================== LAYOUT PRINCIPAL ===================== */
-        .container {
-            display: flex;
-            height: 100vh;
-            width: 100%;
-            /* Efeito de vidro */
-            backdrop-filter: blur(3px); 
-            flex-direction: column; 
-        }
-        
-        /* Media query para telas maiores (desktop/tablet) */
-        @media (min-width: 768px) {
-            .container {
-                flex-direction: row;
-            }
-            .chat-area {
-                padding: 40px;
-            }
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #E6EEF6;
+      background: radial-gradient(ellipse at bottom, #05010a 0%, #03010f 100%);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-        /* ===================== CHAT AREA ===================== */
-        .chat-area {
-            flex: 1;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            position: relative;
-        }
-        .chat-header {
-            position: absolute; 
-            top: 20px;
-            left: 20px;
-            z-index: 10;
-        }
-        @media (min-width: 768px) {
-            .chat-header {
-                left: 40px;
-            }
-        }
+    .container {
+      display: flex;
+      width: 95%;
+      height: 95vh;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      backdrop-filter: blur(18px);
+      background: rgba(255, 255, 255, 0.04);
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
 
-        .chat-header h1 {
-            font-size: 1.8em;
-            /* Gradiente de cor do código original */
-            background: linear-gradient(90deg, #7efcfe, #6b7bff); 
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .chat-header p {
-            font-size: 0.9em;
-            color: #99aaff;
-        }
-        .chat-box {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 20px 0;
-            margin-bottom: 10px;
-            display: flex;
-            flex-direction: column;
-            padding-top: 80px; 
-        }
-        
-        /* Estilo da bolha de chat */
-        .message-row {
-            display: flex;
-            margin-bottom: 10px;
-        }
-        .message-row.user-row {
-            justify-content: flex-end;
-        }
-        .message-row.bot-row {
-            justify-content: flex-start;
-        }
-        .chat-bubble {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            line-height: 1.4;
-            word-break: break-word;
-            overflow-wrap: break-word;
-        }
-        @media (min-width: 768px) {
-            .chat-bubble {
-                max-width: 70%;
-            }
-        }
-        .chat-bubble.user {
-            /* Cor do usuário do código original */
-            background: linear-gradient(135deg, rgba(63, 76, 207, 0.8), rgba(107, 123, 255, 0.8)); 
-            color: white;
-            border-radius: 12px 12px 0 12px; 
-        }
-        .chat-bubble.bot {
-            /* Cor do bot do código original */
-            background: rgba(255,255,255,0.05);
-            color: #E6EEF6;
-            border-radius: 12px 12px 12px 0; 
-        }
-        .chat-bubble p.sender {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .chat-bubble p.text {
-            margin-top: 5px;
-        }
+    /* ==================== ÁREA DO CHAT ==================== */
+    .chat-area {
+      flex: 3;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px 30px;
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
 
-        /* Status de upload adaptado */
-        #status-message {
-            margin-bottom: 10px;
-            font-size: 0.9em;
-            text-align: center;
-            color: #99aaff;
-        }
+    .chat-header {
+      text-align: center;
+      padding-bottom: 15px;
+    }
 
-        /* Área de Input */
-        .input-area {
-            display: flex;
-            gap: 10px;
-            padding-bottom: 20px; 
-            /* Centraliza o formulário horizontalmente */
-            justify-content: center; 
-        }
-        
-        /* Garante que o formulário tenha uma largura máxima e use o flex para os elementos internos */
-        .input-area #chat-form {
-            display: flex;
-            max-width: 600px; /* Largura máxima para centralização em desktop */
-            width: 100%;     /* Garante que preencha em telas menores */
-            gap: 10px;
-        }
-        
-        .input-area input {
-            flex: 1;
-            padding: 14px;
-            border-radius: 10px;
-            border: none;
-            background: rgba(255,255,255,0.07);
-            color: #E6EEF6;
-            font-size: 1em;
-        }
-        .input-area input:focus {
-            outline: 2px solid #6b7bff;
-        }
-        .input-area button {
-            background: linear-gradient(135deg, #3f4ccf, #6b7bff);
-            border: none;
-            padding: 14px 18px;
-            border-radius: 10px;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        .input-area button:hover:not(:disabled) {
-            transform: scale(1.05);
-        }
-        .input-area button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        input:disabled {
-            opacity: 0.8;
-            cursor: not-allowed;
-        }
+    .chat-header h1 {
+      font-weight: 700;
+      font-size: 1.8rem;
+      margin-bottom: 5px;
+      color: #8AB4F8;
+    }
 
-        /* Scrollbar estilizada */
-        .chat-box::-webkit-scrollbar {
-            width: 6px;
-        }
-        .chat-box::-webkit-scrollbar-thumb {
-            background-color: rgba(255,255,255,0.1);
-            border-radius: 4px;
-        }
+    .chat-header p {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
 
-        /* ===================== SIDEBAR ===================== */
-        .sidebar {
-            width: 100%;
-            min-height: 200px;
-            background: rgba(255, 255, 255, 0.02);
-            border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            gap: 10px;
-        }
-        @media (min-width: 768px) {
-            .sidebar {
-                width: 28%;
-                min-height: 100vh;
-                border-left: 1px solid rgba(255,255,255,0.05);
-                border-top: none;
-                padding: 40px;
-            }
-        }
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      margin-bottom: 15px;
+      scrollbar-width: thin;
+      scrollbar-color: #2b2b2b transparent;
+    }
 
-        .sidebar h2 {
-            font-size: 1.3em;
-            text-align: left;
-            margin-bottom: 15px;
-            color: #99aaff;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 5px;
-        }
-        .sidebar button, .sidebar label { 
-            background: linear-gradient(135deg, #3f4ccf, #6b7bff);
-            border: none;
-            color: white;
-            padding: 14px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s ease;
-            display: flex; 
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        .sidebar button:hover, .sidebar label:hover {
-            background: linear-gradient(135deg, #5566ff, #7a8aff);
-            transform: scale(1.02);
-        }
-        .sidebar .reset-btn {
-            background: linear-gradient(135deg, #cc4444, #ff6666);
-        }
-        .sidebar .reset-btn:hover {
-            background: linear-gradient(135deg, #e65555, #ff7a7a);
-        }
-        .sidebar svg {
-            margin-right: 8px;
-        }
-        .sidebar label.disabled, .sidebar button.disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-    </style>
+    .chat-box::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-box::-webkit-scrollbar-thumb {
+      background-color: #2b2b2b;
+      border-radius: 4px;
+    }
+
+    .input-area {
+      display: flex;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 10px;
+    }
+
+    .input-area form {
+      width: 100%;
+      display: flex;
+      gap: 10px;
+    }
+
+    #user-input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 0.95rem;
+      color: #E6EEF6;
+      background: rgba(255,255,255,0.1);
+    }
+
+    #send-button {
+      background: #8AB4F8;
+      border: none;
+      color: #000;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 0 20px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    #send-button:hover {
+      background: #a0c2fa;
+    }
+
+    /* ==================== MENSAGENS ==================== */
+    .message-row {
+      display: flex;
+      margin-bottom: 14px;
+      width: 100%;
+    }
+
+    .bot-row {
+      justify-content: flex-start;
+    }
+
+    .user-row {
+      justify-content: flex-end;
+    }
+
+    .chat-bubble {
+      max-width: 70%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      line-height: 1.4;
+      word-wrap: break-word;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .chat-bubble.bot {
+      background: rgba(255,255,255,0.08);
+      color: #E6EEF6;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-bubble.user {
+      background: #8AB4F8;
+      color: #000;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-bubble .sender {
+      font-size: 0.8rem;
+      font-weight: 600;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+
+    #status-message {
+      font-size: 0.85rem;
+      text-align: center;
+      opacity: 0.7;
+      margin-bottom: 6px;
+    }
+
+    /* ==================== SIDEBAR ==================== */
+    .sidebar {
+      flex: 1;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 25px 20px;
+    }
+
+    .sidebar h2 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: #8AB4F8;
+    }
+
+    .sidebar label,
+    .sidebar button {
+      display: block;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 12px;
+      padding: 10px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,0.1);
+      color: #E6EEF6;
+      transition: background 0.3s ease;
+    }
+
+    .sidebar label:hover,
+    .sidebar button:hover {
+      background: rgba(255,255,255,0.18);
+    }
+
+    .reset-btn {
+      background: rgba(255,70,70,0.15);
+      color: #FF7070;
+    }
+
+    .reset-btn:hover {
+      background: rgba(255,70,70,0.25);
+    }
+
+    /* ==================== ANIMAÇÕES ==================== */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==================== RESPONSIVIDADE ==================== */
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+      }
+      .sidebar {
+        flex: none;
+        height: auto;
+        border-top: 1px solid rgba(255,255,255,0.08);
+      }
+      .chat-area {
+        border-right: none;
+        flex: 1;
+      }
+    }
+  </style>
 </head>
 
 <body>
-
-<canvas id="stars"></canvas>
-
-<div class="container">
+  <div class="container">
     <div class="chat-area">
-        <div class="chat-header">
-            <h1>Insight Tab</h1>
-            <p>Seu assistente de análise de dados em Varejo Tecnológico</p>
-        </div>
+      <div class="chat-header">
+        <h1>Insight Tab</h1>
+        <p>Seu assistente de análise de dados</p>
+      </div>
 
-        <div class="chat-box" id="chat-container">
-            <!-- Mensagem inicial será injetada via JS -->
-        </div>
+      <div id="chat-container" class="chat-box"></div>
+      <div id="status-message">Iniciando...</div>
 
-        <div id="status-message">
-            <span>Pronto para começar.</span>
-        </div>
-
-        <div class="input-area">
-            <form id="chat-form" class="flex items-center space-x-2 w-full">
-                <input id="user-input" type="text"
-                    placeholder="Pergunte sobre seus dados ou análise geral..." disabled/>
-                <button type="submit" id="send-button" disabled>
-                    Enviar
-                </button>
-            </form>
-        </div>
+      <div class="input-area">
+        <form id="chat-form">
+          <input id="user-input" type="text" placeholder="Pergunte sobre seus dados..." disabled />
+          <button id="send-button" type="submit" disabled>Enviar</button>
+        </form>
+      </div>
     </div>
 
     <div class="sidebar">
+      <div>
         <h2>Ações de Dados</h2>
+        <input type="file" id="data-file-hidden" accept=".csv,.xlsx" style="display:none" />
+        <label for="data-file-hidden" id="upload-label">Upload CSV/XLSX</label>
+        <button id="reset-button" class="reset-btn">Limpar Chat / Resetar Contexto</button>
+      </div>
 
-        <!-- Input de arquivo escondido para upload -->
-        <input type="file" id="data-file-hidden" accept=".csv, .xlsx" style="display: none;" />
-        <label for="data-file-hidden" id="upload-label">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-            Upload CSV/XLSX
-        </label>
-
-        <!-- Botão de Reset -->
-        <button id="reset-button" class="reset-btn">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            Limpar Chat / Resetar Contexto
-        </button>
-
-        <h2>Exemplos de Pergunta</h2>
-        <button onclick="quickAction('Quais são as colunas disponíveis para análise?')">📋 Colunas de Dados</button>
-        <button onclick="quickAction('Qual o produto com maior volume de vendas?')">🏆 Produto Líder</button>
-        <button onclick="quickAction('Crie uma análise de tendência rápida.')">📈 Análise Rápida</button>
+      <div>
+        <h2>Exemplos</h2>
+        <button onclick="quickAction('Quais são as colunas disponíveis para análise?')">Colunas de Dados</button>
+        <button onclick="quickAction('Qual o produto com maior volume de vendas?')">Produto Líder</button>
+      </div>
     </div>
-</div>
+  </div>
 
-<script>
-    /* ===================== STARS BACKGROUND ===================== */
-    const canvas = document.getElementById('stars');
-    const ctx = canvas.getContext('2d');
-    let stars = [];
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    // === CONFIGURAÇÃO PRINCIPAL ===
+    const API_BASE_URL = "https://chat-bot-back-end-7.onrender.com"; // <<< troque pela URL do seu app Render
+    const CHAT_ENDPOINT = `${API_BASE_URL.replace(/\/$/, '')}/api/chat`;
+    const UPLOAD_ENDPOINT = `${API_BASE_URL.replace(/\/$/, '')}/api/upload`;
+    const RESET_ENDPOINT = `${API_BASE_URL.replace(/\/$/, '')}/api/reset`;
 
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    function createStars() {
-        stars = [];
-        const numStars = 80;
-        for (let i = 0; i < numStars; i++) {
-            stars.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                size: Math.random() * 1.8,
-                speed: Math.random() * 0.05
-            });
-        }
-    }
-
-    function animateStars() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'white';
-        for (let star of stars) {
-            ctx.beginPath();
-            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-            ctx.fill();
-            star.y += star.speed;
-            if (star.y > canvas.height) star.y = 0;
-        }
-        requestAnimationFrame(animateStars);
-    }
-
-    createStars();
-    animateStars();
-
-    /* ===================== CHAT FUNCTIONALITY & API ===================== */
-
-    // ⚠️ ATENÇÃO: SUBSTITUA ESTA URL PELA URL REAL DA SUA API HOSPEDADA NO RENDER.COM ⚠️
-    const API_BASE_URL = 'https://chat-bot-back-end-7.onrender.com'; 
-
-    const UPLOAD_ENDPOINT = `${API_BASE_URL}/api/upload`;
-    const CHAT_ENDPOINT = `${API_BASE_URL}/api/chat`;
-    const RESET_ENDPOINT = `${API_BASE_URL}/api/reset`;
-    
-    const API_PLACEHOLDER = 'YOUR_RENDER_API_URL_HERE'; // Variável de controle interna
-
+    // === ELEMENTOS ===
     const chatContainer = document.getElementById('chat-container');
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
     const statusMessage = document.getElementById('status-message');
-    const resetButton = document.getElementById('reset-button');
     const dataFile = document.getElementById('data-file-hidden');
     const uploadLabel = document.getElementById('upload-label');
-    
+    const resetButton = document.getElementById('reset-button');
     let isFileLoaded = false;
 
-    // Utilitários de UI
-    function scrollToBottom() {
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+    // === FUNÇÕES DE UI ===
+    function createMessageBubble(sender, message, isUser = false) {
+      const row = document.createElement('div');
+      row.className = `message-row ${isUser ? 'user-row' : 'bot-row'}`;
+      const bubble = document.createElement('div');
+      bubble.className = `chat-bubble ${isUser ? 'user' : 'bot'}`;
+      bubble.innerHTML = `<p class="sender">${sender}:</p><p class="text">${message.replace(/\n/g, '<br>')}</p>`;
+      row.appendChild(bubble);
+      chatContainer.appendChild(row);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
     function toggleInput(disable) {
-        userInput.disabled = disable;
-        sendButton.disabled = disable;
-        // Se o chat está desabilitado, os botões também devem ser desabilitados
-        if (disable) {
-            uploadLabel.classList.add('disabled');
-            resetButton.classList.add('disabled');
-        } else {
-            uploadLabel.classList.remove('disabled');
-            resetButton.classList.remove('disabled');
-        }
+      userInput.disabled = disable;
+      sendButton.disabled = disable;
+      uploadLabel.style.opacity = disable ? 0.5 : 1;
+      resetButton.style.opacity = disable ? 0.5 : 1;
     }
 
-    function createMessageBubble(sender, message, isUser = false) {
-        const rowDiv = document.createElement('div');
-        rowDiv.className = `message-row ${isUser ? 'user-row' : 'bot-row'}`;
-        
-        const messageContent = document.createElement('div');
-        messageContent.className = `chat-bubble ${isUser ? 'user' : 'bot'}`;
-        
-        const senderName = document.createElement('p');
-        senderName.className = 'sender';
-        senderName.textContent = sender + ':'; 
-        
-        const messageText = document.createElement('p');
-        messageText.className = 'text';
-        // Processa formatação simples como negrito e quebras de linha
-        messageText.innerHTML = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-        
-        messageContent.appendChild(senderName);
-        messageContent.appendChild(messageText);
-        rowDiv.appendChild(messageContent);
-        chatContainer.appendChild(rowDiv);
-        scrollToBottom();
-    }
-
-    let typingIndicator = null;
-    function showTypingIndicator() {
-        if (!typingIndicator) {
-            typingIndicator = document.createElement('div');
-            typingIndicator.className = 'message-row bot-row';
-            typingIndicator.innerHTML = `
-                <div class="chat-bubble bot italic" style="color:#99aaff">
-                    <p class="sender">Insight Tab: </p>
-                    <p class="text">Digitando...</p>
-                </div>
-            `;
-            chatContainer.appendChild(typingIndicator);
-            scrollToBottom();
-        }
-    }
-    function hideTypingIndicator() {
-        if (typingIndicator) {
-            chatContainer.removeChild(typingIndicator);
-            typingIndicator = null;
-        }
-    }
-    
-    // Função de Mensagem Inicial
-    function createInitialMessage() {
-        chatContainer.innerHTML = '';
-        createMessageBubble('Insight Tab', 
-            `Olá! Eu sou o **Insight Tab**. Sou especialista em análise de dados em **Varejo Tecnológico**. 
-            Use o botão de **Upload CSV/XLSX** para carregar sua planilha e começar a análise de dados.
-            Enquanto não há dados carregados, eu posso responder a perguntas gerais!`);
-    }
-
-
-    // ================== UPLOAD FILE LOGIC ==================
-    dataFile.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        // Validação da URL CENTRALIZADA
-        if (API_BASE_URL === API_PLACEHOLDER) {
-            statusMessage.innerHTML = '⚠️ **ERRO DE CONFIGURAÇÃO:** Substitua `YOUR_RENDER_API_URL_HERE` no JS pela sua URL do Render.';
-            return;
-        }
-
-        toggleInput(true);
-        statusMessage.innerHTML = `<span style="color:#7efcfe;">Enviando e processando arquivo: ${file.name}...</span>`;
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            resetChat(false); // Limpa o chat, mas não envia reset para o backend (será sobrescrito)
-            createMessageBubble('Insight Tab', `Iniciando o upload e processamento do arquivo: **${file.name}**. Isso pode levar alguns segundos (depende do tamanho do arquivo)...`);
-            
-            const response = await fetch(UPLOAD_ENDPOINT, {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-            
-            chatContainer.innerHTML = ''; // Limpa as mensagens de status antes do resumo
-
-            if (response.ok) {
-                createMessageBubble('Insight Tab', result.data_summary || result.reply);
-                isFileLoaded = true;
-                statusMessage.innerHTML = `<span style="color:lightgreen;">Arquivo '${file.name}' carregado. Pronto para análise de dados!</span>`;
-            } else {
-                createMessageBubble('Insight Tab', `**Erro no Upload/API:** ${result.error || 'Erro desconhecido.'}`);
-                isFileLoaded = false;
-                statusMessage.innerHTML = '<span style="color:#ff6666;">Falha no upload. Tente novamente ou verifique o backend.</span>';
-            }
-        } catch (error) {
-            console.error('Erro de rede no upload:', error);
-            createMessageBubble('Insight Tab', `**Erro de Rede:** Não foi possível conectar ao servidor (${API_BASE_URL}).`);
-            isFileLoaded = false;
-            statusMessage.innerHTML = '<span style="color:#ff6666;">Erro de rede.</span>';
-        } finally {
-            dataFile.value = null; // Reseta o input de arquivo
-            toggleInput(false);
-            userInput.focus();
-        }
-    });
-
-
-    // ================== CHAT MESSAGE LOGIC ==================
-    chatForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const message = userInput.value.trim();
-        if (!message) return;
-
-        // Validação da URL CENTRALIZADA
-        if (API_BASE_URL === API_PLACEHOLDER) {
-            statusMessage.innerHTML = '⚠️ **ERRO DE CONFIGURAÇÃO:** Substitua `YOUR_RENDER_API_URL_HERE` no JS pela sua URL do Render.';
-            return;
-        }
-
-        userInput.value = '';
-        toggleInput(true);
-        createMessageBubble('Você', message, true);
-        showTypingIndicator();
-
-        try {
-            const payload = { 
-                message: message, 
-                is_file_loaded: isFileLoaded 
-            }; 
-            
-            const response = await fetch(CHAT_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-            hideTypingIndicator();
-            
-            if (response.ok) {
-                createMessageBubble('Insight Tab', result.reply);
-            } else {
-                createMessageBubble('Insight Tab', `**Erro na Análise:** ${result.reply || result.error || 'Erro desconhecido no servidor.'}`);
-            }
-        } catch (error) {
-            console.error('Erro no chat:', error);
-            hideTypingIndicator();
-            createMessageBubble('Insight Tab', '**Erro de Rede:** Não foi possível conectar ao servidor.');
-        } finally {
-            toggleInput(false);
-            userInput.focus();
-        }
-    });
-
-    // ================== RESET LOGIC (REVISADA) ==================
-    async function resetChat(callApi = true) {
-        toggleInput(true);
-        let apiSuccess = true; // Flag para rastrear se a chamada de API foi bem-sucedida
-
-        try {
-             // Validação da URL antes de chamar o reset da API
-            if (callApi && API_BASE_URL === API_PLACEHOLDER) {
-                apiSuccess = false; // Não tentaremos chamar a API, mas faremos o reset local
-                throw new Error("API URL not configured. Skipping server reset.");
-            }
-            
-            // 1. Chamar o endpoint de reset no servidor
-            if (callApi) {
-                statusMessage.innerHTML = '<span style="color:#ff6666;">Tentando resetar contexto no servidor (Render)...</span>';
-                const response = await fetch(RESET_ENDPOINT, { method: 'POST' });
-                if (!response.ok) {
-                    apiSuccess = false;
-                    throw new Error("API reset failed (Server status not OK).");
-                }
-            }
-        } catch (error) {
-            console.error('Erro ao chamar o endpoint de reset:', error);
-            // Se a API falhar (rede ou servidor dormindo), apenas registramos o erro e
-            // tratamos como falha de API, mas continuamos com o reset local.
-            createMessageBubble('Insight Tab', 
-                '**Alerta de Conexão:** Falha ao comunicar com o servidor para resetar o contexto (provavelmente o Render está *dormindo* ou a URL não foi configurada). ' +
-                '**Fazendo reset apenas da interface (local).** Tente um Upload em seguida.');
-            statusMessage.innerHTML = '<span style="color:#ff6666;">Falha de API, mas reset local OK.</span>';
-            apiSuccess = false; // Garante que a mensagem final seja de erro
-        }
-
-        // 2. Resetar o estado local (Sempre acontece, mesmo se a API falhar)
-        isFileLoaded = false;
-        createInitialMessage();
-        
-        // 3. Atualizar a mensagem final
-        if (apiSuccess && callApi) {
-            statusMessage.innerHTML = '<span style="color:#99aaff;">Chat e contexto de dados resetados (Local e Servidor). Pronto para novo upload.</span>';
-        } else if (!callApi) {
-            // Se não chamou a API (ex: reset após upload)
-            statusMessage.innerHTML = '<span style="color:#99aaff;">Pronto para começar.</span>';
-        }
-
+    async function checkBackendHealth() {
+      try {
+        const resp = await fetch(API_BASE_URL.replace(/\/$/, ''), { method: 'GET', cache: 'no-store' });
+        if (!resp.ok) throw new Error('Status não OK');
+        const json = await resp.json();
+        statusMessage.innerHTML = `Conectado ao servidor (${json.dados_status}). Linhas: ${json.total_linhas}`;
         toggleInput(false);
-        userInput.focus();
+        return true;
+      } catch (e) {
+        statusMessage.innerHTML = `⚠️ Erro de conexão com backend (${API_BASE_URL}).`;
+        toggleInput(true);
+        return false;
+      }
     }
 
-    resetButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Chamamos o reset completo
-        resetChat(true); 
+    async function initApp() {
+      createMessageBubble('Insight Tab', 'Olá! Verificando conexão com o servidor...');
+      await checkBackendHealth();
+    }
+
+    // === UPLOAD ===
+    dataFile.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!await checkBackendHealth()) {
+        createMessageBubble('Insight Tab', 'Servidor indisponível. Tente novamente.');
+        return;
+      }
+      toggleInput(true);
+      createMessageBubble('Insight Tab', `Enviando arquivo ${file.name}...`);
+      const fd = new FormData();
+      fd.append('file', file);
+      try {
+        const res = await fetch(UPLOAD_ENDPOINT, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (res.ok) {
+          createMessageBubble('Insight Tab', `✅ ${json.reply}`);
+          const s = json.data_summary;
+          createMessageBubble('Insight Tab', `Linhas: ${s.rows}, Colunas: ${s.columns}\nColunas: ${s.columns_list.join(', ')}`);
+          isFileLoaded = true;
+          statusMessage.innerHTML = `Arquivo carregado: ${file.name}`;
+        } else {
+          createMessageBubble('Insight Tab', `Erro no upload: ${json.error || 'Erro desconhecido'}`);
+        }
+      } catch {
+        createMessageBubble('Insight Tab', 'Erro de rede no upload.');
+      } finally {
+        toggleInput(false);
+        dataFile.value = '';
+      }
     });
 
-    // Função para Ações Rápidas (usa a função de chat)
+    // === CHAT ===
+    chatForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const msg = userInput.value.trim();
+      if (!msg) return;
+      createMessageBubble('Você', msg, true);
+      userInput.value = '';
+      toggleInput(true);
+      createMessageBubble('Insight Tab', 'Analisando...');
+      try {
+        const res = await fetch(CHAT_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg, is_file_loaded: isFileLoaded })
+        });
+        const json = await res.json();
+        if (res.ok) {
+          chatContainer.querySelectorAll('.bot-row .text:last-child');
+          createMessageBubble('Insight Tab', json.reply || 'Sem resposta.');
+        } else {
+          createMessageBubble('Insight Tab', `Erro: ${json.error || 'erro desconhecido'}`);
+        }
+      } catch {
+        createMessageBubble('Insight Tab', 'Erro de rede. Verifique o backend.');
+      } finally {
+        toggleInput(false);
+      }
+    });
+
+    // === RESET ===
+    resetButton.addEventListener('click', async () => {
+      toggleInput(true);
+      try {
+        const res = await fetch(RESET_ENDPOINT, { method: 'POST' });
+        const json = await res.json();
+        createMessageBubble('Insight Tab', json.reply);
+        isFileLoaded = false;
+        chatContainer.innerHTML = '';
+      } catch {
+        createMessageBubble('Insight Tab', 'Erro ao resetar o servidor.');
+      } finally {
+        toggleInput(false);
+      }
+    });
+
+    // === AÇÕES RÁPIDAS ===
     function quickAction(msg) {
-        if (userInput.disabled) return;
-        userInput.value = msg;
-        chatForm.dispatchEvent(new Event('submit'));
+      userInput.value = msg;
+      chatForm.dispatchEvent(new Event('submit'));
     }
     window.quickAction = quickAction;
 
-    // Inicialização CORRIGIDA
-    function initApp() {
-        // Cria a mensagem inicial no chat
-        createInitialMessage();
-        // Habilita o input e botões (Upload, Reset, Enviar)
-        toggleInput(false);
-        // Coloca o foco no input
-        userInput.focus();
-        
-        // Exibe o erro de configuração se o placeholder for usado
-        if (API_BASE_URL === API_PLACEHOLDER) {
-            statusMessage.innerHTML = '⚠️ **ERRO DE CONFIGURAÇÃO:** Substitua `YOUR_RENDER_API_URL_HERE` no JS pela sua URL do Render.';
-        }
-    }
-
-    window.onload = initApp;
-</script>
+    // === START ===
+    initApp();
+  </script>
 </body>
 </html>
