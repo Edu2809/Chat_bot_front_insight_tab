@@ -152,11 +152,11 @@
             display: flex;
             gap: 10px;
             padding-bottom: 20px; 
-            /* NOVO: Centraliza o formulário horizontalmente */
+            /* Centraliza o formulário horizontalmente */
             justify-content: center; 
         }
         
-        /* NOVO: Garante que o formulário tenha uma largura máxima e use o flex para os elementos internos */
+        /* Garante que o formulário tenha uma largura máxima e use o flex para os elementos internos */
         .input-area #chat-form {
             display: flex;
             max-width: 600px; /* Largura máxima para centralização em desktop */
@@ -524,7 +524,7 @@
         if (!message) return;
 
         // Validação da URL
-        if (API_BASE_URL.includes('https://chat-bot-back-end-7.onrender.com')) {
+        if (API_BASE_URL.includes('https://chat-bot-back-end-7.onrender.com/')) {
              statusMessage.innerHTML = '⚠️ **ERRO DE CONFIGURAÇÃO:** Substitua `YOUR_RENDER_API_URL_HERE` no JS pela sua URL do Render.';
              return;
         }
@@ -564,31 +564,43 @@
         }
     });
 
-    // ================== RESET LOGIC ==================
+    // ================== RESET LOGIC (REVISADA) ==================
     async function resetChat(callApi = true) {
         toggleInput(true);
+        let apiSuccess = true; // Flag para rastrear se a chamada de API foi bem-sucedida
+
         try {
             // 1. Chamar o endpoint de reset no servidor
             if (callApi) {
-                statusMessage.innerHTML = '<span style="color:#ff6666;">Resetando contexto no servidor...</span>';
+                statusMessage.innerHTML = '<span style="color:#ff6666;">Tentando resetar contexto no servidor (Render)...</span>';
                 const response = await fetch(RESET_ENDPOINT, { method: 'POST' });
-                if (!response.ok) throw new Error("API reset failed");
+                if (!response.ok) {
+                    apiSuccess = false;
+                    throw new Error("API reset failed (Server status not OK).");
+                }
             }
-
-            // 2. Resetar o estado local
-            isFileLoaded = false;
-            
-            // 3. Limpar e recriar a mensagem inicial
-            createInitialMessage();
-            statusMessage.innerHTML = '<span style="color:#99aaff;">Chat e contexto de dados resetados. Pronto para novo upload.</span>';
-
         } catch (error) {
-            createMessageBubble('Insight Tab', '**Erro:** Falha ao resetar o chat e o contexto no servidor.');
-            statusMessage.innerHTML = '<span style="color:#ff6666;">Falha ao resetar. Tente novamente.</span>';
-        } finally {
-            toggleInput(false);
-            userInput.focus();
+            console.error('Erro ao chamar o endpoint de reset:', error);
+            // Se a API falhar (rede ou servidor dormindo), apenas registramos o erro e
+            // tratamos como falha de API, mas continuamos com o reset local.
+            createMessageBubble('Insight Tab', 
+                '**Alerta de Conexão:** Falha ao comunicar com o servidor para resetar o contexto (provavelmente o Render está *dormindo*). ' +
+                '**Fazendo reset apenas da interface (local).** Tente um Upload em seguida.');
+            statusMessage.innerHTML = '<span style="color:#ff6666;">Falha de API, mas reset local OK.</span>';
+            apiSuccess = false; // Garante que a mensagem final seja de erro
         }
+
+        // 2. Resetar o estado local (Sempre acontece, mesmo se a API falhar)
+        isFileLoaded = false;
+        createInitialMessage();
+        
+        // 3. Atualizar a mensagem final
+        if (apiSuccess) {
+            statusMessage.innerHTML = '<span style="color:#99aaff;">Chat e contexto de dados resetados (Local e Servidor). Pronto para novo upload.</span>';
+        }
+        
+        toggleInput(false);
+        userInput.focus();
     }
 
     resetButton.addEventListener('click', (e) => {
